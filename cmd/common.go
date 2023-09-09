@@ -33,10 +33,7 @@ func newCookieJar() (*cookiejar.Jar, error) {
 }
 
 func keyringBackendType() keyring.BackendType {
-	allowedBackends := []keyring.BackendType{
-		keyring.KeychainBackend,
-		keyring.SecretServiceBackend,
-	}
+	allowedBackends := []keyring.BackendType{}
 
 	for _, backend := range allowedBackends {
 		if slices.Contains(keyring.AvailableBackends(), backend) {
