@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"github.com/majd/ipatool/v2/pkg/util/machine"
+	"github.com/majd/ipatool/v2/pkg/util/operatingsystem"
+	"path/filepath"
 	"reflect"
 
 	"github.com/majd/ipatool/v2/pkg/appstore"
@@ -37,9 +40,11 @@ func rootCmd() *cobra.Command {
 			OutputFormatText: {"text"},
 			OutputFormatJSON: {"json"},
 		}, enumflag.EnumCaseSensitive), "format", "", "sets output format for command; can be 'text', 'json'")
+	defaultKeychainPath := filepath.Join(machine.New(machine.Args{OS: operatingsystem.New()}).HomeDirectory(), ConfigDirectoryName)
 	cmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enables verbose logs")
 	cmd.PersistentFlags().BoolVarP(&nonInteractive, "non-interactive", "", false, "run in non-interactive session")
 	cmd.PersistentFlags().StringVar(&keychainPassphrase, "keychain-passphrase", "", "passphrase for unlocking keychain")
+	cmd.PersistentFlags().StringVar(&keychainLocation, "keychain-path", defaultKeychainPath, "path to the keychain")
 
 	cmd.AddCommand(authCmd())
 	cmd.AddCommand(downloadCmd())

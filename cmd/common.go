@@ -24,6 +24,7 @@ import (
 
 var dependencies = Dependencies{}
 var keychainPassphrase string
+var keychainLocation string
 
 type Dependencies struct {
 	Logger    log.Logger
@@ -55,7 +56,7 @@ func newLogger(format OutputFormat, verbose bool) log.Logger {
 // newCookieJar returns a new cookie jar instance.
 func newCookieJar(machine machine.Machine) http.CookieJar {
 	return util.Must(cookiejar.New(&cookiejar.Options{
-		Filename: filepath.Join(machine.HomeDirectory(), ConfigDirectoryName, CookieJarFileName),
+		Filename: filepath.Join(keychainLocation, CookieJarFileName),
 	}))
 }
 
@@ -68,7 +69,7 @@ func newKeychain(machine machine.Machine, logger log.Logger, interactive bool) k
 			keyring.FileBackend,
 		},
 		ServiceName: KeychainServiceName,
-		FileDir:     filepath.Join(machine.HomeDirectory(), ConfigDirectoryName),
+		FileDir:     keychainLocation,
 		FilePasswordFunc: func(s string) (string, error) {
 			if keychainPassphrase == "" && !interactive {
 				return "", errors.New("keychain passphrase is required when not running in interactive mode; use the \"--keychain-passphrase\" flag")
@@ -119,11 +120,10 @@ func initWithCommand(cmd *cobra.Command) {
 
 // createConfigDirectory creates the configuration directory for the CLI tool, if needed.
 func createConfigDirectory(os operatingsystem.OperatingSystem, machine machine.Machine) error {
-	configDirectoryPath := filepath.Join(machine.HomeDirectory(), ConfigDirectoryName)
-	_, err := os.Stat(configDirectoryPath)
+	_, err := os.Stat(keychainLocation)
 
 	if err != nil && os.IsNotExist(err) {
-		err = os.MkdirAll(configDirectoryPath, 0700)
+		err = os.MkdirAll(keychainLocation, 0700)
 		if err != nil {
 			return fmt.Errorf("failed to create config directory: %w", err)
 		}
