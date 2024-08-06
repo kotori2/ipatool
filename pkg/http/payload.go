@@ -2,10 +2,11 @@ package http
 
 import (
 	"bytes"
-	"github.com/pkg/errors"
-	"howett.net/plist"
+	"fmt"
 	"net/url"
 	"strconv"
+
+	"howett.net/plist"
 )
 
 type Payload interface {
@@ -25,7 +26,7 @@ func (p *XMLPayload) data() ([]byte, error) {
 
 	err := plist.NewEncoder(buffer).Encode(p.Content)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrEncodePayloadXML.Error())
+		return nil, fmt.Errorf("failed to encode plist: %w", err)
 	}
 
 	return buffer.Bytes(), nil
@@ -41,7 +42,7 @@ func (p *URLPayload) data() ([]byte, error) {
 		case int:
 			params.Add(key, strconv.Itoa(val.(int)))
 		default:
-			return nil, errors.Errorf("%s: %s", ErrUnsupportedValueType.Error(), t)
+			return nil, fmt.Errorf("value type is not supported (%s)", t)
 		}
 	}
 

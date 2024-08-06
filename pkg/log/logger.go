@@ -1,13 +1,14 @@
 package log
 
 import (
+	"io"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
-	"io"
 )
 
-//go:generate mockgen -source=logger.go -destination=logger_mock.go -package log
+//go:generate go run go.uber.org/mock/mockgen -source=logger.go -destination=logger_mock.go -package log
 type Logger interface {
 	Verbose() *zerolog.Event
 	Log() *zerolog.Event
@@ -19,12 +20,12 @@ type logger struct {
 	verbose        bool
 }
 
-type LoggerArgs struct {
+type Args struct {
 	Verbose bool
 	Writer  io.Writer
 }
 
-func NewLogger(args LoggerArgs) Logger {
+func NewLogger(args Args) Logger {
 	internalLogger := log.Logger
 	level := zerolog.InfoLevel
 

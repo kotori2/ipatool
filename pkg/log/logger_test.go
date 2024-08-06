@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("Logger", func() {
@@ -22,7 +22,7 @@ var _ = Describe("Logger", func() {
 
 	Context("Verbose logger", func() {
 		BeforeEach(func() {
-			logger = NewLogger(LoggerArgs{
+			logger = NewLogger(Args{
 				Verbose: true,
 				Writer:  mockWriter,
 			})
@@ -44,7 +44,7 @@ var _ = Describe("Logger", func() {
 
 	Context("Non-verbose logger", func() {
 		BeforeEach(func() {
-			logger = NewLogger(LoggerArgs{
+			logger = NewLogger(Args{
 				Verbose: false,
 				Writer:  mockWriter,
 			})

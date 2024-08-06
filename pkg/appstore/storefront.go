@@ -1,6 +1,23 @@
 package appstore
 
-var StoreFronts = map[string]string{
+import (
+	"fmt"
+	"strings"
+)
+
+func countryCodeFromStoreFront(storeFront string) (string, error) {
+	for key, val := range storeFronts {
+		parts := strings.Split(storeFront, "-")
+
+		if len(parts) >= 1 && parts[0] == val {
+			return key, nil
+		}
+	}
+
+	return "", fmt.Errorf("country code mapping for store front (%s) was not found", storeFront)
+}
+
+var storeFronts = map[string]string{
 	"AE": "143481",
 	"AG": "143540",
 	"AI": "143538",
@@ -46,6 +63,7 @@ var StoreFronts = map[string]string{
 	"FR": "143442",
 	"GB": "143444",
 	"GD": "143546",
+	"GE": "143615",
 	"GH": "143573",
 	"GR": "143448",
 	"GT": "143504",

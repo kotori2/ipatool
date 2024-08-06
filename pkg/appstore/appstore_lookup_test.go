@@ -1,31 +1,26 @@
 package appstore
 
 import (
-	"github.com/golang/mock/gomock"
-	"github.com/majd/ipatool/pkg/http"
-	"github.com/majd/ipatool/pkg/log"
+	"errors"
+
+	"github.com/majd/ipatool/v2/pkg/http"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pkg/errors"
-	"os"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("AppStore (Lookup)", func() {
 	var (
 		ctrl       *gomock.Controller
-		mockClient *http.MockClient[SearchResult]
-		mockLogger *log.MockLogger
-		as         *appstore
+		mockClient *http.MockClient[searchResult]
+		as         AppStore
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mockClient = http.NewMockClient[SearchResult](ctrl)
-		mockLogger = log.NewMockLogger(ctrl)
+		mockClient = http.NewMockClient[searchResult](ctrl)
 		as = &appstore{
 			searchClient: mockClient,
-			ioReader:     os.Stdin,
-			logger:       mockLogger,
 		}
 	})
 
@@ -33,56 +28,14 @@ var _ = Describe("AppStore (Lookup)", func() {
 		ctrl.Finish()
 	})
 
-	When("country code is invalid", func() {
-		It("returns error", func() {
-			_, err := as.lookup("", "XYZ")
-			Expect(err).To(MatchError(ContainSubstring(ErrInvalidCountryCode.Error())))
-		})
-	})
-
-	When("request fails", func() {
-		var testErr = errors.New("test")
-
-		BeforeEach(func() {
-			mockClient.EXPECT().
-				Send(gomock.Any()).
-				Return(http.Result[SearchResult]{}, testErr)
-		})
-
-		It("returns error", func() {
-			_, err := as.lookup("", "US")
-			Expect(err).To(MatchError(ContainSubstring(testErr.Error())))
-			Expect(err).To(MatchError(ContainSubstring(ErrRequest.Error())))
-		})
-	})
-
-	When("request returns bad status code", func() {
-		BeforeEach(func() {
-			mockLogger.EXPECT().
-				Verbose().
-				Return(nil)
-
-			mockClient.EXPECT().
-				Send(gomock.Any()).
-				Return(http.Result[SearchResult]{
-					StatusCode: 400,
-				}, nil)
-		})
-
-		It("returns error", func() {
-			_, err := as.lookup("", "US")
-			Expect(err).To(MatchError(ContainSubstring(ErrRequest.Error())))
-		})
-	})
-
 	When("request is successful", func() {
 		When("does not find app", func() {
 			BeforeEach(func() {
 				mockClient.EXPECT().
 					Send(gomock.Any()).
-					Return(http.Result[SearchResult]{
+					Return(http.Result[searchResult]{
 						StatusCode: 200,
-						Data: SearchResult{
+						Data: searchResult{
 							Count:   0,
 							Results: []App{},
 						},
@@ -90,8 +43,12 @@ var _ = Describe("AppStore (Lookup)", func() {
 			})
 
 			It("returns error", func() {
-				_, err := as.lookup("", "US")
-				Expect(err).To(MatchError(ContainSubstring(ErrAppNotFound.Error())))
+				_, err := as.Lookup(LookupInput{
+					Account: Account{
+						StoreFront: "143441",
+					},
+				})
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -107,9 +64,9 @@ var _ = Describe("AppStore (Lookup)", func() {
 			BeforeEach(func() {
 				mockClient.EXPECT().
 					Send(gomock.Any()).
-					Return(http.Result[SearchResult]{
+					Return(http.Result[searchResult]{
 						StatusCode: 200,
-						Data: SearchResult{
+						Data: searchResult{
 							Count:   1,
 							Results: []App{testApp},
 						},
@@ -117,10 +74,61 @@ var _ = Describe("AppStore (Lookup)", func() {
 			})
 
 			It("returns app", func() {
-				app, err := as.lookup("", "US")
+				app, err := as.Lookup(LookupInput{
+					Account: Account{
+						StoreFront: "143441",
+					},
+				})
 				Expect(err).ToNot(HaveOccurred())
-				Expect(app).To(Equal(testApp))
+				Expect(app).To(Equal(LookupOutput{App: testApp}))
 			})
+		})
+	})
+
+	When("store front is invalid", func() {
+		It("returns error", func() {
+			_, err := as.Lookup(LookupInput{
+				Account: Account{
+					StoreFront: "xyz",
+				},
+			})
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	When("request fails", func() {
+		BeforeEach(func() {
+			mockClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[searchResult]{}, errors.New(""))
+		})
+
+		It("returns error", func() {
+			_, err := as.Lookup(LookupInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+			})
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	When("request returns bad status code", func() {
+		BeforeEach(func() {
+			mockClient.EXPECT().
+				Send(gomock.Any()).
+				Return(http.Result[searchResult]{
+					StatusCode: 400,
+				}, nil)
+		})
+
+		It("returns error", func() {
+			_, err := as.Lookup(LookupInput{
+				Account: Account{
+					StoreFront: "143441",
+				},
+			})
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })

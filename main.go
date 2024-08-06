@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/majd/ipatool/cmd"
 	"os"
+
+	"github.com/majd/ipatool/v2/cmd"
 )
 
 func main() {

@@ -3,4 +3,4 @@
 .LSOverride
 .vscode/
 .idea/
-cmd/version.go
+**/*_mock.go

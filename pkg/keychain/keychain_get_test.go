@@ -1,11 +1,12 @@
 package keychain
 
 import (
+	"errors"
+
 	"github.com/99designs/keyring"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pkg/errors"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("Keychain (Get)", func() {
@@ -18,7 +19,7 @@ var _ = Describe("Keychain (Get)", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockKeyring = NewMockKeyring(ctrl)
-		keychain = NewKeychain(KeychainArgs{
+		keychain = New(Args{
 			Keyring: mockKeyring,
 		})
 	})
@@ -29,18 +30,16 @@ var _ = Describe("Keychain (Get)", func() {
 
 	When("keyring returns error", func() {
 		const testKey = "test-key"
-		var testErr = errors.New("test error")
 
 		BeforeEach(func() {
 			mockKeyring.EXPECT().
 				Get(testKey).
-				Return(keyring.Item{}, testErr)
+				Return(keyring.Item{}, errors.New(""))
 		})
 
 		It("returns wrapped error", func() {
 			data, err := keychain.Get(testKey)
-			Expect(err).To(MatchError(ContainSubstring(testErr.Error())))
-			Expect(err).To(MatchError(ContainSubstring("failed to get item from keyring")))
+			Expect(err).To(HaveOccurred())
 			Expect(data).To(BeNil())
 		})
 	})

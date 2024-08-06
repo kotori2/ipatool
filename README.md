@@ -107,15 +107,17 @@ Usage:
   ipatool download [flags]
 
 Flags:
-  -b, --bundle-identifier string   The bundle identifier of the target iOS app (required)
+  -i, --app-id int                 ID of the target iOS app (required)
+  -b, --bundle-identifier string   The bundle identifier of the target iOS app (overrides the app ID)
   -h, --help                       help for download
   -o, --output string              The destination path of the downloaded app package
       --purchase                   Obtain a license for the app if needed
 
 Global Flags:
-      --format format     sets output format for command; can be 'text', 'json' (default text)
-      --non-interactive   run in non-interactive session
-      --verbose           enables verbose logs
+      --format format                sets output format for command; can be 'text', 'json' (default text)
+      --keychain-passphrase string   passphrase for unlocking keychain
+      --non-interactive              run in non-interactive session
+      --verbose                      enables verbose logs
 ```
 
 **Note:** the tool runs in interactive mode by default. Use the `--non-interactive` flag
@@ -129,9 +131,10 @@ The tool can be compiled using the Go toolchain.
 $ go build -o ipatool
 ```
 
-Unit tests can be executed with the following command.
+Unit tests can be executed with the following commands.
 
 ```shell
+$ go generate github.com/majd/ipatool/...
 $ go test -v github.com/majd/ipatool/...
 ```
 

@@ -1,5 +1,30 @@
 ## Changelog
 
+### Version [2.1.3](https://github.com/majd/ipatool/releases/tag/v2.1.3)
+
+- Fixed a bug where temporary files were not removed after downloading the app package.
+- Fixed a bug where the `--keychain-passphrase` flag was marked as invalid.
+
+### Version [2.1.2](https://github.com/majd/ipatool/releases/tag/v2.1.2)
+
+- `FileBackend` keyring is now used when other options are not available.
+
+### Version [2.1.1](https://github.com/majd/ipatool/releases/tag/v2.1.1)
+
+- Fixed an issue when creating the config directory for the tool.
+
+### Version [2.1.0](https://github.com/majd/ipatool/releases/tag/v2.1.0)
+
+- Implemented `Lookup` API.
+- Implemented `AccountInfo` API.
+- Implemented `ReplicateSinf` API.
+- Added storefront code for Georgia (GE).
+- Build version is now set using linker flags.
+- Refactored API interfaces.
+- Improved tests for http package.
+- Integrated `golangci-lint` linter.
+- Added v2 suffix to module path.
+
 ### Version [2.0.3](https://github.com/majd/ipatool/releases/tag/v2.0.3)
 
 - Added support for downloading Apple Arcade games.
